@@ -10,7 +10,6 @@ from .LittleBirdie.RepeatedAudio import adding_background_audio
 from .LittleBirdie.ImageTransition import image_transition, video_transition
 
 def create_video(intro, transcript_audio, content):
-    print("enetring 1st process")
     background_video = VideoFileClip('downloads/BG Template.mp4')
     background_audio = AudioFileClip('downloads/music.mp3')
     intro_video = VideoFileClip('downloads/intro.mp4')
@@ -34,7 +33,6 @@ def create_video(intro, transcript_audio, content):
         elif file_extension in ['.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv']:
             audio = item["with_audio"]
             total_duration, clips, audio_clips1 = video_transition(media_path, total_duration, clips, new_start_time, audio, audio_clips, w, h, speed)
-        print(total_duration)
         new_start_time = total_duration
 
     ## modify the duration of background video ##
@@ -42,7 +40,6 @@ def create_video(intro, transcript_audio, content):
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    print("writing 1st video")
     video.write_videofile("downloads/video1.mp4", fps=30)
 
     clips = []
@@ -67,24 +64,20 @@ def create_video(intro, transcript_audio, content):
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    print("writing the second video...")
     video.write_videofile("downloads/video2.mp4", fps=30)
 
     video1 = VideoFileClip("downloads/video1.mp4")
     video2 = VideoFileClip("downloads/video2.mp4")
     final_video = concatenate_videoclips([video1, intro_video, video2])
     final_with_outro = CompositeVideoClip([final_video, outro_video.with_effects([vfx.SlideIn(0.3, "top")]).with_start(final_video.duration - 1)]).subclipped()
-    print("adding the Outro")
     background_audio = background_audio.subclipped(0,final_with_outro.duration)
-    print("adding the background audio")
     background_audio = adding_background_audio(video1, intro_video, final_with_outro, audio_clips1, audio_clips2, background_audio)
-    print("adding the transcript audio")
     transcript_audio = adding_transcripts_audio(transcript_audio)
     combined_audio = CompositeAudioClip([transcript_audio, final_video.audio, background_audio])
     final = final_with_outro.with_audio(combined_audio)
-    print("writing the output")
     final.write_videofile("downloads/output1.mp4", fps=30)
-    # upload_to_s3("downloads/output1.mp4", f"LittleBirdie/{datetime.now()}.mp4")
+    path = upload_to_s3("downloads/output1.mp4", f"LittleBirdie/{datetime.now()}.mp4")
+    return path
 
 def upload_to_s3(file_path, s3_path):
     s3 = boto3.client('s3')
@@ -92,5 +85,6 @@ def upload_to_s3(file_path, s3_path):
         s3.upload_file(file_path, os.getenv('AWS_STORAGE_BUCKET_NAME'), s3_path,
                        ExtraArgs={'ACL': 'public-read'})
         print(f"Uploaded {file_path} to S3 bucket.")
+        return s3_path
     except Exception as e:
         print(f"Error uploading {file_path} to S3: {str(e)}")

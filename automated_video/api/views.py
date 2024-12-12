@@ -10,5 +10,5 @@ class CreateVideoView(APIView):
             transcript_audio = serializer.validated_data['transcript_audio']
             intro = serializer.validated_data['intro']
             content = serializer.validated_data['content']
-            create_video( intro, transcript_audio, content)
-        return Response({'message': "Success"})
+            path = create_video( intro, transcript_audio, content)
+        return Response({'url': f"{path}"})
