@@ -76,7 +76,7 @@ def create_video(intro, transcript_audio, content):
     combined_audio = CompositeAudioClip([transcript_audio, final_video.audio, background_audio])
     final = final_with_outro.with_audio(combined_audio)
     final.write_videofile("downloads/output1.mp4", fps=30)
-    path = upload_to_s3("downloads/output1.mp4", f"LittleBirdie/{datetime.now()}.mp4")
+    path = upload_to_s3("downloads/output1.mp4", f"LittleBirdie/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}")
     return path
 
 def upload_to_s3(file_path, s3_path):

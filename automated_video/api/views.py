@@ -11,4 +11,5 @@ class CreateVideoView(APIView):
             intro = serializer.validated_data['intro']
             content = serializer.validated_data['content']
             path = create_video( intro, transcript_audio, content)
+            url = f"https://.s3.amazonaws.com/{path}"
         return Response({'url': f"{path}"})
