@@ -9,7 +9,7 @@ from .LittleBirdie.Transcript import adding_transcripts_audio
 from .LittleBirdie.RepeatedAudio import adding_background_audio
 from .LittleBirdie.ImageTransition import image_transition, video_transition
 
-def create_video(intro, transcript_audio, content):
+def create_video(intro, transcript_audio, content, video_name):
     background_video = VideoFileClip('downloads/BG Template.mp4')
     background_audio = AudioFileClip('downloads/music.mp3')
     intro_video = VideoFileClip('downloads/intro.mp4')
@@ -76,7 +76,7 @@ def create_video(intro, transcript_audio, content):
     combined_audio = CompositeAudioClip([transcript_audio, final_video.audio, background_audio])
     final = final_with_outro.with_audio(combined_audio)
     final.write_videofile("downloads/output1.mp4", fps=30)
-    path = upload_to_s3("downloads/output1.mp4", f"LittleBirdie/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.mp4")
+    path = upload_to_s3("downloads/output1.mp4", f"LittleBirdie/{video_name}.mp4")
     return path
 
 def upload_to_s3(file_path, s3_path):
@@ -85,6 +85,19 @@ def upload_to_s3(file_path, s3_path):
         s3.upload_file(file_path, os.getenv('AWS_STORAGE_BUCKET_NAME'), s3_path,
                        ExtraArgs={'ACL': 'public-read'})
         print(f"Uploaded {file_path} to S3 bucket.")
+        remove_local_file(file_path)
+        remove_local_file("downloads/video1.mp4")
+        remove_local_file("downloads/video2.mp4")
         return s3_path
     except Exception as e:
         print(f"Error uploading {file_path} to S3: {str(e)}")
+
+def remove_local_file(file_path):
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"Removed local file: {file_path}")
+        else:
+            print(f"File does not exist: {file_path}")
+    except Exception as e:
+        print(f"Error removing file {file_path}: {str(e)}")

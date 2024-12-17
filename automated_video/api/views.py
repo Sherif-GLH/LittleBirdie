@@ -1,15 +1,29 @@
 from rest_framework.views import APIView
 from .serializers import PostRequestSerializer
 from rest_framework.response import Response
-from .Main import create_video
+from.tasks import create_video_task
 
 class CreateVideoView(APIView):
     def post(self, request):
         serializer = PostRequestSerializer(data=request.data)
         if serializer.is_valid():
-            transcript_audio = serializer.validated_data['transcript_audio']
-            intro = serializer.validated_data['intro']
-            content = serializer.validated_data['content']
-            path = create_video( intro, transcript_audio, content)
-            url = f"https://machine-genius-video.s3.amazonaws.com/{path}"
-        return Response({'url': f"{url}"})
+            try:
+                webhock = serializer.validated_data['webhock']
+                template = serializer.validated_data['template']
+                webhook_url = webhock['url']
+                metadata = webhock['metadata']
+                video_id = metadata['video_id']
+                employee_email = metadata['employee']
+                intro = template['intro']
+                content = template['content']
+                transcript_audio = template['transcript_audio']
+                employee_name = employee_email.split('@')[0]
+                video_name = employee_name + video_id 
+
+                create_video_task.delay(intro, transcript_audio, content, video_name, metadata, webhook_url)
+
+                return Response({'response': "success"})
+            except Exception as e:
+                return Response({'error': str(e)}, status=500)
+        else:
+            return Response(serializer.errors, status=400)
