@@ -89,6 +89,7 @@ def upload_to_s3(file_path, s3_path):
         remove_local_file("downloads/video1.mp4")
         remove_local_file("downloads/video2.mp4")
         remove_local_file("downloads/sample.mp3")
+        remove_local_file("downloads/sample.mp4")
         return s3_path
     except Exception as e:
         print(f"Error uploading {file_path} to S3: {str(e)}")
