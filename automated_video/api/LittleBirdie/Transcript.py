@@ -1,6 +1,6 @@
 from moviepy import *
 import requests
-from Main import remove_local_file
+from ..Main import remove_local_file
 def adding_transcripts_audio(transcript_audio):
     audio_list = []
     i = 0
