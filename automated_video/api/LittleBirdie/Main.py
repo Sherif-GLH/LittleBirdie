@@ -1,10 +1,10 @@
 import os, requests, boto3, random
 from moviepy import *
 from io import BytesIO
-from .LittleBirdie.RepeatedVideo import repeat_video
-from .LittleBirdie.Transcript import adding_transcripts_audio
-from .LittleBirdie.RepeatedAudio import adding_background_audio
-from .LittleBirdie.ImageTransition import image_transition, video_transition
+from .RepeatedVideo import repeat_video
+from .Transcript import adding_transcripts_audio
+from .RepeatedAudio import adding_background_audio
+from .ImageTransition import image_transition, video_transition
 
 def create_video(intro, transcript_audio, content, video_name):
     background_video = VideoFileClip('downloads/BG Template.mp4')
@@ -40,7 +40,7 @@ def create_video(intro, transcript_audio, content, video_name):
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    video.write_videofile(f"downloads/{video1_name}.mp4", fps=30)
+    video.write_videofile(f"downloads/{video1_name}.mp4", fps=30, preset="superfast")
 
     clips = []
     total_duration = 0
@@ -64,7 +64,7 @@ def create_video(intro, transcript_audio, content, video_name):
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    video.write_videofile(f"downloads/{video2_name}.mp4", fps=30)
+    video.write_videofile(f"downloads/{video2_name}.mp4", fps=30, preset="superfast")
 
     video1 = VideoFileClip(f"downloads/{video1_name}.mp4")
     video2 = VideoFileClip(f"downloads/{video2_name}.mp4")
@@ -75,6 +75,7 @@ def create_video(intro, transcript_audio, content, video_name):
     transcript_audio = adding_transcripts_audio(transcript_audio)
     combined_audio = CompositeAudioClip([transcript_audio, final_video.audio, background_audio])
     final = final_with_outro.with_audio(combined_audio)
+    #output file
     name = random.randint(10000, 99999)
     final.write_videofile(f"downloads/{name}.mp4", fps=30)
     path = upload_to_s3(f"downloads/{name}.mp4", f"LittleBirdie/{video_name}.mp4", video1_name, video2_name)

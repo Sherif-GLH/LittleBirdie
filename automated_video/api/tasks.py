@@ -1,4 +1,4 @@
-from .Main import create_video
+from .LittleBirdie.Main import create_video
 from celery import shared_task
 import requests, subprocess
 from django.conf import settings
