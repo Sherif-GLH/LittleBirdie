@@ -46,16 +46,16 @@ def image_transition(image_path, total_duration, clips, new_start_time, pause_du
     total_duration += animated_image.duration
     return total_duration, clips
 
-def video_transition(video_path, total_duration, clips, new_start_time, audio, audio_clips, w, h, speed):
+def video_transition(i, video_path, total_duration, clips, new_start_time, audio, audio_clips, w, h, speed):
     print("entering video transition")
-    local_filename = "downloads/sample.mp4"
+    local_filename = f"downloads/sample{i}.mp4"
 
     # Perform the GET request and download the file
-    with requests.get(video_path, stream=True) as response:
-        response.raise_for_status()  # Check for HTTP errors
-        with open(local_filename, "wb") as file:
-            for chunk in response.iter_content(chunk_size=8192):  # Download in chunks
-                file.write(chunk)
+    response = requests.get(video_path, stream=True)
+    response.raise_for_status()  # Check for HTTP errors
+    with open(local_filename, "wb") as file:
+        for chunk in response.iter_content(chunk_size=8192):  # Download in chunks
+            file.write(chunk)
     video_clip = VideoFileClip(local_filename)
     pause_duration = video_clip.duration
     # audio clips
@@ -95,6 +95,7 @@ def video_transition(video_path, total_duration, clips, new_start_time, audio, a
     distance_to_center = start_position[1] - center_position[1]
     time_to_center = distance_to_center / speed
     print("animating the video")
+    i +=1
     # animating shadow
     shadow = ImageClip("downloads/final_output.png")
     animated_shadow = (

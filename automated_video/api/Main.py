@@ -1,9 +1,6 @@
-import os
-import requests
-import boto3
+import os, requests, boto3, random
 from moviepy import *
 from io import BytesIO
-from datetime import datetime
 from .LittleBirdie.RepeatedVideo import repeat_video
 from .LittleBirdie.Transcript import adding_transcripts_audio
 from .LittleBirdie.RepeatedAudio import adding_background_audio
@@ -14,6 +11,8 @@ def create_video(intro, transcript_audio, content, video_name):
     background_audio = AudioFileClip('downloads/music.mp3')
     intro_video = VideoFileClip('downloads/intro.mp4')
     outro_video = VideoFileClip('downloads/outro.mp4')
+    video1_name = random.randint(1000, 9999)
+    video2_name = random.randint(100, 999)
     w, h = background_video.size
     audio_clips1 = []
     audio_clips2 = []
@@ -22,6 +21,7 @@ def create_video(intro, transcript_audio, content, video_name):
     audio_clips = []
     total_duration = 0
     new_start_time = 0
+    i = 0
     for item in intro: 
         media_path = item["url"]
         file_extension = os.path.splitext(media_path)[1].lower()
@@ -32,7 +32,7 @@ def create_video(intro, transcript_audio, content, video_name):
             total_duration, clips = image_transition(image_data, total_duration, clips, new_start_time, pause_duration, w, h, speed)
         elif file_extension in ['.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv']:
             audio = item["with_audio"]
-            total_duration, clips, audio_clips1 = video_transition(media_path, total_duration, clips, new_start_time, audio, audio_clips, w, h, speed)
+            total_duration, clips, audio_clips1 = video_transition(i, media_path, total_duration, clips, new_start_time, audio, audio_clips, w, h, speed)
         new_start_time = total_duration
 
     ## modify the duration of background video ##
@@ -40,13 +40,13 @@ def create_video(intro, transcript_audio, content, video_name):
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    video.write_videofile("downloads/video1.mp4", fps=30)
+    video.write_videofile(f"downloads/{video1_name}.mp4", fps=30)
 
     clips = []
     total_duration = 0
     audio_clips = []
     new_start_time = 0
-
+    i = 0 
     for item in content:
         media_path = item["url"]
         file_extension = os.path.splitext(media_path)[1].lower()
@@ -57,17 +57,17 @@ def create_video(intro, transcript_audio, content, video_name):
             total_duration, clips = image_transition(image_data, total_duration, clips, new_start_time, pause_duration,w, h, speed)
         elif file_extension in ['.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv']:
            audio = item["with_audio"]
-           total_duration, clips, audio_clips2 = video_transition(media_path, total_duration, clips, new_start_time, audio, audio_clips,w, h, speed)
+           total_duration, clips, audio_clips2 = video_transition(i, media_path, total_duration, clips, new_start_time, audio, audio_clips,w, h, speed)
         new_start_time = total_duration
 
     background_video_repeated = repeat_video(video=background_video,total_duration=total_duration)
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    video.write_videofile("downloads/video2.mp4", fps=30)
+    video.write_videofile(f"downloads/{video2_name}.mp4", fps=30)
 
-    video1 = VideoFileClip("downloads/video1.mp4")
-    video2 = VideoFileClip("downloads/video2.mp4")
+    video1 = VideoFileClip(f"downloads/{video1_name}.mp4")
+    video2 = VideoFileClip(f"downloads/{video2_name}.mp4")
     final_video = concatenate_videoclips([video1, intro_video, video2])
     final_with_outro = CompositeVideoClip([final_video, outro_video.with_effects([vfx.SlideIn(0.3, "top")]).with_start(final_video.duration - 1)]).subclipped()
     background_audio = background_audio.subclipped(0,final_with_outro.duration)
@@ -75,20 +75,20 @@ def create_video(intro, transcript_audio, content, video_name):
     transcript_audio = adding_transcripts_audio(transcript_audio)
     combined_audio = CompositeAudioClip([transcript_audio, final_video.audio, background_audio])
     final = final_with_outro.with_audio(combined_audio)
-    final.write_videofile("downloads/output1.mp4", fps=30)
-    path = upload_to_s3("downloads/output1.mp4", f"LittleBirdie/{video_name}.mp4")
+    name = random.randint(10000, 99999)
+    final.write_videofile(f"downloads/{name}.mp4", fps=30)
+    path = upload_to_s3(f"downloads/{name}.mp4", f"LittleBirdie/{video_name}.mp4", video1_name, video2_name)
     return path
 
-def upload_to_s3(file_path, s3_path):
+def upload_to_s3(file_path, s3_path, video1_name, video2_name):
     s3 = boto3.client('s3')
     try:
         s3.upload_file(file_path, os.getenv('AWS_STORAGE_BUCKET_NAME'), s3_path,
                        ExtraArgs={'ACL': 'public-read'})
         print(f"Uploaded {file_path} to S3 bucket.")
         remove_local_file(file_path)
-        remove_local_file("downloads/video1.mp4")
-        remove_local_file("downloads/video2.mp4")
-        remove_local_file("downloads/sample.mp4")
+        remove_local_file(f"downloads/{video1_name}.mp4")
+        remove_local_file(f"downloads/{video2_name}.mp4")
         return s3_path
     except Exception as e:
         print(f"Error uploading {file_path} to S3: {str(e)}")

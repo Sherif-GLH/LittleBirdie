@@ -27,3 +27,7 @@ class CreateVideoView(APIView):
                 return Response({'error': str(e)}, status=500)
         else:
             return Response(serializer.errors, status=400)
+
+class HealthCheckView(APIView):
+    def get(self, request):
+        return Response({'response': "success"},status=200)

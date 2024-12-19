@@ -1,29 +1,29 @@
 name: Deploy LittleBirdie on EC2
-
 on:
   push:
     branches:
       - main
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
     # Step 2: Set up the SSH key
     - name: Set up SSH key
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 --decode > my-key.pem
         chmod 600 my-key.pem
-
     # Step 3: SSH into the existing EC2 instance and perform tasks
     - name: Deploy LittleBirdie
       run: |
         ssh -o StrictHostKeyChecking=no -i my-key.pem ubuntu@${{ secrets.EC2_PUBLIC_IP }} << EOF
+          echo "=============================Pull Changes"============================="
           cd /home/ubuntu/LittleBirdie
           git pull
+          echo "=============================Build Image"============================="
           docker-compose build
+          echo "=============================Terminate Services"============================="
           docker stack rm little
           sleep 20
+          echo "=============================Start New Server"============================="
           docker stack deploy -c docker-compose.prod.yaml little
         EOF
