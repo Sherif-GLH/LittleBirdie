@@ -1,6 +1,6 @@
 from moviepy import *
-import requests
-from ..Main import remove_local_file
+import requests, os
+
 def adding_transcripts_audio(transcript_audio):
     audio_list = []
     i = 0
@@ -22,3 +22,13 @@ def adding_transcripts_audio(transcript_audio):
         i += 1
     combined_intro_audio = CompositeAudioClip(audio_list)
     return combined_intro_audio
+
+def remove_local_file(file_path):
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"Removed local file: {file_path}")
+        else:
+            print(f"File does not exist: {file_path}")
+    except Exception as e:
+        print(f"Error removing file {file_path}: {str(e)}")
