@@ -16,7 +16,7 @@ def create_video_task(intro, transcript_audio, content, video_name, metadata, we
         response = requests.post(webhook_url, json=payload)
     except requests.exceptions.RequestException as e:
         print(f"An error occurred while sending video notification: {e}")
-    # check_tasks()
+    check_tasks()
 
 def shutdown_instance():
      subprocess.run(["sudo", "shutdown", "-h", "now"])
