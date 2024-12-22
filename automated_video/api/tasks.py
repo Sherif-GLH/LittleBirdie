@@ -16,15 +16,19 @@ def create_video_task(intro, transcript_audio, content, video_name, metadata, we
         response = requests.post(webhook_url, json=payload)
     except requests.exceptions.RequestException as e:
         print(f"An error occurred while sending video notification: {e}")
-    check_tasks()
+    try:
+        check_tasks()
+    except Exception as e:
+        print(f"An error occurred while checking tasks: {e}")
 
 def shutdown_instance():
      subprocess.run(["sudo", "shutdown", "-h", "now"]) 
 
 def check_tasks():
-   active = Inspect.active()
-   reserved = Inspect.reserved()
-   scheduled = Inspect.scheduled()
+   inspect_instance = Inspect()
+   active = inspect_instance.active()
+   reserved = inspect_instance.reserved()
+   scheduled = inspect_instance.scheduled()
 
 
    if not any(active.values()) and not any(reserved.values()) and not any(scheduled.values()):
