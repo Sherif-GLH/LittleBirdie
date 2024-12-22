@@ -1,6 +1,6 @@
 from .LittleBirdie.Main import create_video
 from celery import shared_task
-import requests, subprocess
+import requests, subprocess, redis
 from django.conf import settings
 from celery.app.control import Inspect
 
@@ -10,6 +10,7 @@ def create_video_task(intro, transcript_audio, content, video_name, metadata, we
     url =  settings.MEDIA_URL + path
     payload = {
         "url": url,
+        "status": "Done",
         "metadata" : metadata
     }
     try:
@@ -25,15 +26,9 @@ def shutdown_instance():
      subprocess.run(["sudo", "shutdown", "-h", "now"]) 
 
 def check_tasks():
-   try:
-    inspect_instance = Inspect()
-    active = inspect_instance.active()
-    reserved = inspect_instance.reserved()
-    scheduled = inspect_instance.scheduled()
-   except Exception as e:
-      print(e)
-
-   if active == None and scheduled == None and reserved == None:
-     print("No tasks found in the queue...... shutting the instance down")
-     shutdown_instance()
+    r = redis.Redis()
+    queues = len(r.keys('*'))
+    if queues == 0:
+        print("No tasks found in the queue...... shutting the instance down")
+        shutdown_instance()
 
