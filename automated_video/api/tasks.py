@@ -31,7 +31,7 @@ def check_tasks():
    scheduled = inspect_instance.scheduled()
 
 
-   if not any(active.values()) and not any(reserved.values()) and not any(scheduled.values()):
+   if active == None and scheduled == None and reserved == None:
      print("No tasks found in the queue...... shutting the instance down")
      shutdown_instance()
 
