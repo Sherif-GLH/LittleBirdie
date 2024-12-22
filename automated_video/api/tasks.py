@@ -19,7 +19,7 @@ def create_video_task(intro, transcript_audio, content, video_name, metadata, we
     check_tasks()
 
 def shutdown_instance():
-     subprocess.run(["sudo", "shutdown", "-h", "now"])
+     subprocess.run(["sudo", "shutdown", "-h", "now"]) 
 
 def check_tasks():
    active = Inspect.active()
