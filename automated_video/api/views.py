@@ -12,7 +12,7 @@ class CreateVideoView(APIView):
                 template = serializer.validated_data['template']
                 webhook_url = webhock['url']
                 metadata = webhock['metadata']
-                video_id = metadata['video_id']
+                video_id = metadata['_id']
                 employee_email = metadata['employee']
                 intro = template['intro']
                 content = template['content']
