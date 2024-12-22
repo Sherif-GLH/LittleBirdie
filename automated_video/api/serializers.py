@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 class MetadataSerializer(serializers.Serializer):
-    video_id = serializers.CharField()
+    _id = serializers.CharField()
     employee = serializers.EmailField()
 
 # Webhook Serializer
