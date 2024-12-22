@@ -25,11 +25,13 @@ def shutdown_instance():
      subprocess.run(["sudo", "shutdown", "-h", "now"]) 
 
 def check_tasks():
-   inspect_instance = Inspect()
-   active = inspect_instance.active()
-   reserved = inspect_instance.reserved()
-   scheduled = inspect_instance.scheduled()
-
+   try:
+    inspect_instance = Inspect()
+    active = inspect_instance.active()
+    reserved = inspect_instance.reserved()
+    scheduled = inspect_instance.scheduled()
+   except Exception as e:
+      print(e)
 
    if active == None and scheduled == None and reserved == None:
      print("No tasks found in the queue...... shutting the instance down")
