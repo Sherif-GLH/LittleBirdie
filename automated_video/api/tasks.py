@@ -1,6 +1,6 @@
 from .LittleBirdie.Main import create_video
 from celery import shared_task
-import requests, subprocess, redis
+import requests, boto3, redis
 from django.conf import settings
 
 
@@ -24,7 +24,10 @@ def create_video_task(intro, transcript_audio, content, video_name, metadata, we
 
 def shutdown_instance():
     print("Shutting down the instance...")
-    subprocess.run(["sudo", "shutdown", "-h", "now"]) 
+    ec2 = boto3.client('ec2', region_name='us-east-1')
+    instance_id = 'i-0f027204f2e90802c'  
+    ec2.stop_instances(InstanceIds=[instance_id])
+    print(f"Instance {instance_id} is stopping.")
 
 def is_last_task(queue_name='celery', redis_host='redis', redis_port=6379, redis_db=0):
     try:
