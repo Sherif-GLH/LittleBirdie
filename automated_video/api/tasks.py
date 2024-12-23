@@ -2,7 +2,8 @@ from .LittleBirdie.Main import create_video
 from celery import shared_task
 import requests, subprocess, redis
 from django.conf import settings
-from celery.app.control import Inspect
+
+
 
 @shared_task
 def create_video_task(intro, transcript_audio, content, video_name, metadata, webhook_url):
@@ -17,18 +18,28 @@ def create_video_task(intro, transcript_audio, content, video_name, metadata, we
         response = requests.post(webhook_url, json=payload)
     except requests.exceptions.RequestException as e:
         print(f"An error occurred while sending video notification: {e}")
-    try:
-        check_tasks()
-    except Exception as e:
-        print(f"An error occurred while checking tasks: {e}")
+    
+    b = is_last_task()
+    
 
 def shutdown_instance():
-     subprocess.run(["sudo", "shutdown", "-h", "now"]) 
+    print("Shutting down the instance...")
+    subprocess.run(["sudo", "shutdown", "-h", "now"]) 
 
-def check_tasks():
-    r = redis.Redis()
-    queues = len(r.keys('*'))
-    if queues == 0:
-        print("No tasks found in the queue...... shutting the instance down")
-        shutdown_instance()
+def is_last_task(queue_name='celery', redis_host='redis', redis_port=6379, redis_db=0):
+    try:
+        # Connect to Redis
+        redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db)
+
+        # Get the length of the queue
+        queue_length = redis_client.llen(queue_name)
+
+        if queue_length == 0:
+            print("This is the last task. No tasks are waiting in the queue.")
+            shutdown_instance()
+            return True
+
+    except Exception as e:
+        print(f"Error checking queue length: {e}")
+        return None
 
