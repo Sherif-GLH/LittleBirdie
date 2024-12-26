@@ -40,7 +40,7 @@ def create_video(intro, transcript_audio, content, video_name):
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    video.write_videofile(f"downloads/{video1_name}.mp4", fps=30, )
+    video.write_videofile(f"downloads/{video1_name}.mp4", fps=30 verbose=True, logger='bar')
 
     clips = []
     total_duration = 0
@@ -64,7 +64,7 @@ def create_video(intro, transcript_audio, content, video_name):
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    video.write_videofile(f"downloads/{video2_name}.mp4", fps=30, )
+    video.write_videofile(f"downloads/{video2_name}.mp4", fps=30, verbose=True, logger='bar' )
 
     video1 = VideoFileClip(f"downloads/{video1_name}.mp4")
     video2 = VideoFileClip(f"downloads/{video2_name}.mp4")
