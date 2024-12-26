@@ -1,4 +1,4 @@
-import os, requests, boto3, random
+import os, requests, boto3, random, shutil
 from moviepy import *
 from io import BytesIO
 from .RepeatedVideo import repeat_video
@@ -40,7 +40,7 @@ def create_video(intro, transcript_audio, content, video_name):
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    video.write_videofile(f"downloads/{video1_name}.mp4", fps=60)
+    video.write_videofile(f"temp/{video1_name}.mp4", fps=30)
 
     clips = []
     total_duration = 0
@@ -64,10 +64,10 @@ def create_video(intro, transcript_audio, content, video_name):
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    video.write_videofile(f"downloads/{video2_name}.mp4", fps=60 )
+    video.write_videofile(f"temp/{video2_name}.mp4", fps=30)
 
-    video1 = VideoFileClip(f"downloads/{video1_name}.mp4")
-    video2 = VideoFileClip(f"downloads/{video2_name}.mp4")
+    video1 = VideoFileClip(f"temp/{video1_name}.mp4")
+    video2 = VideoFileClip(f"temp/{video2_name}.mp4")
     final_video = concatenate_videoclips([video1, intro_video, video2])
     final_with_outro = CompositeVideoClip([final_video, outro_video.with_effects([vfx.SlideIn(0.3, "top")]).with_start(final_video.duration - 1)]).subclipped()
     background_audio = background_audio.subclipped(0,final_with_outro.duration)
@@ -77,8 +77,8 @@ def create_video(intro, transcript_audio, content, video_name):
     final = final_with_outro.with_audio(combined_audio)
     #output file
     name = random.randint(10000, 99999)
-    final.write_videofile(f"downloads/{name}.mp4", fps=60 )
-    path = upload_to_s3(f"downloads/{name}.mp4", f"LittleBirdie/{video_name}.mp4", video1_name, video2_name)
+    final.write_videofile(f"temp/{name}.mp4", fps=30 )
+    path = upload_to_s3(f"temp/{name}.mp4", f"LittleBirdie/{video_name}.mp4", video1_name, video2_name)
     return path
 
 def upload_to_s3(file_path, s3_path, video1_name, video2_name):
@@ -87,12 +87,10 @@ def upload_to_s3(file_path, s3_path, video1_name, video2_name):
         s3.upload_file(file_path, os.getenv('AWS_STORAGE_BUCKET_NAME'), s3_path,
                        ExtraArgs={'ACL': 'public-read'})
         print(f"Uploaded {file_path} to S3 bucket.")
-        remove_local_file(file_path)
-        remove_local_file(f"downloads/{video1_name}.mp4")
-        remove_local_file(f"downloads/{video2_name}.mp4")
         return s3_path
     except Exception as e:
         print(f"Error uploading {file_path} to S3: {str(e)}")
+    shutil.rmtree('temp')
 
 def remove_local_file(file_path):
     try:
