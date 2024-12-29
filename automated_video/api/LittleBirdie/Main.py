@@ -1,4 +1,4 @@
-import os, requests, boto3, random, shutil
+import os, requests, boto3, random
 from moviepy import *
 from io import BytesIO
 from .RepeatedVideo import repeat_video

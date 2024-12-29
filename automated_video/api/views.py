@@ -16,6 +16,7 @@ class CreateVideoView(APIView):
                 employee_email = metadata['employee']
                 intro = template['intro']
                 content = template['content']
+                content.extend(template['outro'])
                 transcript_audio = template['transcript_audio']
                 employee_name = employee_email.split('@')[0]
                 video_name = employee_name + video_id 
