@@ -25,7 +25,7 @@ def create_video_task(intro, transcript_audio, content, video_name, metadata, we
 def shutdown_instance():
     print("Shutting down the instance...")
     ec2 = boto3.client('ec2', region_name='us-east-1')
-    instance_id = 'i-0ab13afa8b7776018'  
+    instance_id = 'i-0f027204f2e90802c'  
     ec2.stop_instances(InstanceIds=[instance_id])
     print(f"Instance {instance_id} is stopping.")
 

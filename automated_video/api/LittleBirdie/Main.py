@@ -1,4 +1,4 @@
-import os, requests, boto3, random
+import os, requests, boto3, random, shutil
 from moviepy import *
 from io import BytesIO
 from .RepeatedVideo import repeat_video
@@ -34,6 +34,7 @@ def create_video(intro, transcript_audio, content, video_name):
             audio = item["with_audio"]
             total_duration, clips, audio_clips1 = video_transition(i, media_path, total_duration, clips, new_start_time, audio, audio_clips, w, h, speed)
         new_start_time = total_duration
+        i+=1
 
     ## modify the duration of background video ##
     background_video_repeated = repeat_video(video=background_video, total_duration=total_duration)
@@ -59,6 +60,7 @@ def create_video(intro, transcript_audio, content, video_name):
            audio = item["with_audio"]
            total_duration, clips, audio_clips2 = video_transition(i, media_path, total_duration, clips, new_start_time, audio, audio_clips,w, h, speed)
         new_start_time = total_duration
+        i+=1
 
     background_video_repeated = repeat_video(video=background_video,total_duration=total_duration)
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
@@ -90,6 +92,7 @@ def upload_to_s3(file_path, s3_path, video1_name, video2_name):
         remove_local_file(file_path)
         remove_local_file(f"downloads/{video1_name}.mp4")
         remove_local_file(f"downloads/{video2_name}.mp4")
+        shutil.rmtree('temp')
         return s3_path
     except Exception as e:
         print(f"Error uploading {file_path} to S3: {str(e)}")
