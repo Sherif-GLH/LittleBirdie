@@ -92,7 +92,15 @@ def upload_to_s3(file_path, s3_path, video1_name, video2_name):
         remove_local_file(file_path)
         remove_local_file(f"downloads/{video1_name}.mp4")
         remove_local_file(f"downloads/{video2_name}.mp4")
-        shutil.rmtree('temp')
+        directory = "temp"
+        exception_file = "final_output.png"
+        for filename in os.listdir(directory):
+            file_path = os.path.join(directory, filename)
+            # Check if the file is not the exception and is a file (not a directory)
+            if filename != exception_file and os.path.isfile(file_path):
+                os.remove(file_path)  # Remove the file
+                print(f"Removed: {file_path}")
+        print("All files except final_output.png have been removed.")
         return s3_path
     except Exception as e:
         print(f"Error uploading {file_path} to S3: {str(e)}")
