@@ -109,7 +109,7 @@ def process_image_width(image_path, output_path, target_width=1080):
     
     # Step 4: Save the result
     final_image.save(output_path)
-    return final_image
+    return bordered_image.height
 
 # Combined function
 def process_image_height(image_path, output_path, target_height=1080):
