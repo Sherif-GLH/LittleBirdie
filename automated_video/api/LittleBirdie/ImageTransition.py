@@ -2,6 +2,12 @@ from moviepy import *
 from PIL import Image
 import requests
 from .EditingOnImage import process_image_height, process_image_width
+def scaling_image(t,time_to_center):
+    if t <= time_to_center:
+        return 1
+    else:
+        return (1 + ((t-time_to_center)*0.06))
+        
 def move_image(t, start_pos, center_pos, time_to_ctr, pause_dur, w, h):
     if t <= 0:
         return start_pos
@@ -9,7 +15,7 @@ def move_image(t, start_pos, center_pos, time_to_ctr, pause_dur, w, h):
         new_height = start_pos[1] - (t * (start_pos[1] - center_pos[1]) / time_to_ctr)
         return (start_pos[0], new_height)
     elif time_to_ctr <= t < time_to_ctr + pause_dur:
-        return center_pos
+        return ("center", "center")
     else:
         return (w, h)
 
@@ -17,20 +23,21 @@ def image_transition(image_path, total_duration, clips, new_start_time, pause_du
     print("enter image transition")
     image = Image.open(image_path)
     image_width, image_height = image.size
-    if image_height > image_width:
-        process_image_height(image_path, "temp/final_output.png", target_height=850)
-        image_clip = ImageClip("temp/final_output.png")
-        start_position = ("center", (h /2)-300)
-        center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
-    elif image_height < image_width:
-        specific_height = process_image_width(image_path, "temp/final_output.png", target_width=1000)
-        image_clip = ImageClip("temp/final_output.png")
+    if abs(image_width - image_height) > 100:
+        if image_height > image_width:
+            process_image_height(image_path, "temp/final_output.png", target_height=850)
+            image_clip = ImageClip("temp/final_output.png")
+            start_position = ("center", (h /2)-300)
+            center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
+        else:
+            process_image_width(image_path, "final_output.png", target_width=1000)
+            image_clip = ImageClip("final_output.png")
+            start_position = ("center", (h /2)-100)
+            center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
+    else:
+        process_image_width(image_path, "final_output.png", target_width=750)
+        image_clip = ImageClip("final_output.png")
         start_position = ("center", (h /2)-100)
-        center_position = ("center", abs((h / 2) - (specific_height / 2)))
-    elif image_height == image_width:
-        process_image_height(image_path, "temp/final_output.png", target_height=850)
-        image_clip = ImageClip("temp/final_output.png")
-        start_position = ("center", (h /2)-300)
         center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
     print("finishing processing image")
     distance_to_center = start_position[1] - center_position[1]
@@ -118,7 +125,6 @@ def video_transition(i, video_path, total_duration, clips, new_start_time, audio
     .with_position(lambda t, sp=start_position, cp=center_position,
                    time_to_ctr=time_to_center, pause_dur=pause_duration:
                    move_image(t, sp, cp, time_to_ctr, pause_dur, w, h))
-
     )
     animated_video = animated_video.with_effects([vfx.CrossFadeIn(0.2)])
     clips.append(animated_shadow)
