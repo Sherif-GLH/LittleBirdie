@@ -42,7 +42,7 @@ def create_video(intro, transcript_audio, content, video_name):
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
     print("writing intro.....")
-    video.write_videofile(f"downloads/{video1_name}.mp4", fps=120)
+    video.write_videofile(f"downloads/{video1_name}.mp4", fps=60)
 
     clips = []
     total_duration = 0
@@ -68,7 +68,7 @@ def create_video(intro, transcript_audio, content, video_name):
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
     print("writing content......")
-    video.write_videofile(f"downloads/{video2_name}.mp4", fps=120)
+    video.write_videofile(f"downloads/{video2_name}.mp4", fps=60)
 
     video1 = VideoFileClip(f"downloads/{video1_name}.mp4")
     video2 = VideoFileClip(f"downloads/{video2_name}.mp4")
