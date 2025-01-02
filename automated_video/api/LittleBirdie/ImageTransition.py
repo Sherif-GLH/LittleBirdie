@@ -7,7 +7,7 @@ def scaling_image(t,time_to_center):
         return 1
     else:
         return (1 + ((t-time_to_center)*0.06))
-        
+
 def move_image(t, start_pos, center_pos, time_to_ctr, pause_dur, w, h):
     if t <= 0:
         return start_pos
@@ -25,17 +25,17 @@ def image_transition(image_path, total_duration, clips, new_start_time, pause_du
     image_width, image_height = image.size
     if abs(image_width - image_height) > 100:
         if image_height > image_width:
-            process_image_height(image_path, "temp/final_output.png", target_height=850)
+            process_image_height(image_path, "temp/final_output.png", target_height=650)
             image_clip = ImageClip("temp/final_output.png")
             start_position = ("center", (h /2)-300)
             center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
         else:
-            process_image_width(image_path, "final_output.png", target_width=1000)
+            process_image_width(image_path, "final_output.png", target_width=900)
             image_clip = ImageClip("final_output.png")
             start_position = ("center", (h /2)-100)
             center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
     else:
-        process_image_width(image_path, "final_output.png", target_width=750)
+        process_image_width(image_path, "final_output.png", target_width=600)
         image_clip = ImageClip("final_output.png")
         start_position = ("center", (h /2)-100)
         center_position = ("center", abs((h / 2) - (image_clip.h / 2)))

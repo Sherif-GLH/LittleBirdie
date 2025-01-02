@@ -41,7 +41,8 @@ def create_video(intro, transcript_audio, content, video_name):
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    video.write_videofile(f"downloads/{video1_name}.mp4", fps=30)
+    print("writing intro.....")
+    video.write_videofile(f"downloads/{video1_name}.mp4", fps=120)
 
     clips = []
     total_duration = 0
@@ -66,7 +67,8 @@ def create_video(intro, transcript_audio, content, video_name):
     logo_image = ImageClip("downloads/WATERMARK.png").resized(width=150).with_position((1740,900)).with_duration(background_video_repeated.duration)
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
-    video.write_videofile(f"downloads/{video2_name}.mp4", fps=30 )
+    print("writing content......")
+    video.write_videofile(f"downloads/{video2_name}.mp4", fps=120)
 
     video1 = VideoFileClip(f"downloads/{video1_name}.mp4")
     video2 = VideoFileClip(f"downloads/{video2_name}.mp4")
@@ -79,7 +81,8 @@ def create_video(intro, transcript_audio, content, video_name):
     final = final_with_outro.with_audio(combined_audio)
     #output file
     name = random.randint(10000, 99999)
-    final.write_videofile(f"downloads/{name}.mp4", fps=30 )
+    print("finishing the final video...... ")
+    final.write_videofile(f"downloads/{name}.mp4", fps=30)
     path = upload_to_s3(f"downloads/{name}.mp4", f"LittleBirdie/{video_name}.mp4", video1_name, video2_name)
     return path
 
