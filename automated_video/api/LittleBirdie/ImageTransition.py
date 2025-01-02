@@ -51,6 +51,7 @@ def image_transition(image_path, total_duration, clips, new_start_time, pause_du
                          : move_image(t, sp, cp, time_to_ctr, pause_dur, w, h))
         .with_start(new_start_time)
         .with_duration(pause_duration)
+        .resized(lambda t : scaling_image(t,time_to_center))
     )
     animated_image = animated_image.with_effects([vfx.CrossFadeIn(0.2)])
     clips.append(animated_image)
