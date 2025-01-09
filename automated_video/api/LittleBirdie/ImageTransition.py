@@ -41,13 +41,13 @@ def image_transition(image_path, total_duration, clips, new_start_time, pause_du
             start_position = ("center", (h /2)-300)
             center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
         else:
-            process_image_width(image_path, "final_output.png", target_width=900)
-            image_clip = ImageClip("final_output.png")
+            process_image_width(image_path, "temp/final_output.png", target_width=900)
+            image_clip = ImageClip("temp/final_output.png")
             start_position = ("center", (h /2)-100)
             center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
     else:
-        process_image_width(image_path, "final_output.png", target_width=600)
-        image_clip = ImageClip("final_output.png")
+        process_image_width(image_path, "temp/final_output.png", target_width=600)
+        image_clip = ImageClip("temp/final_output.png")
         start_position = ("center", (h /2)-100)
         center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
     print("finishing processing image")
