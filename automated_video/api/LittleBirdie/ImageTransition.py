@@ -1,17 +1,39 @@
 from moviepy import *
 from PIL import Image
-import requests
+import requests, cv2
+import numpy as np
 from .EditingOnImage import process_image_height, process_image_width
-def scaling_image(t,time_to_center):
-    if t <= time_to_center:
-        return 1
-    else:
-        return (1 + ((t-time_to_center)*0.06))
+
+def Zoom(clip,mode='in',position='center',speed=1):
+    fps = clip.fps
+    duration = clip.duration
+    total_frames = int(duration*fps)
+    def main(get_frame,t):
+        frame = get_frame(t)
+        h,w = frame.shape[:2]
+        i = t*fps
+        if mode == 'out':
+            i = total_frames-i
+        zoom = 1+(i*((0.1*speed)/total_frames))
+        positions = {'center':[(w-(w*zoom))/2,(h-(h*zoom))/2],
+                     'left':[0,(h-(h*zoom))/2],
+                     'right':[(w-(w*zoom)),(h-(h*zoom))/2],
+                     'top':[(w-(w*zoom))/2,0],
+                     'topleft':[0,0],
+                     'topright':[(w-(w*zoom)),0],
+                     'bottom':[(w-(w*zoom))/2,(h-(h*zoom))],
+                     'bottomleft':[0,(h-(h*zoom))],
+                     'bottomright':[(w-(w*zoom)),(h-(h*zoom))]}
+        tx,ty = positions[position]
+        M = np.array([[zoom,0,tx], [0,zoom,ty]])
+        frame = cv2.warpAffine(frame,M,(w,h))
+        return frame
+    return clip.transform(main)
 
 def move_video(t, start_pos, center_pos, time_to_ctr, pause_dur, w, h):
     if t <= 0:
         return start_pos
-    elif 0 < t <= time_to_ctr:
+    elif 0 < t <= time_to_ctr:  
         new_height = start_pos[1] - (t * (start_pos[1] - center_pos[1]) / time_to_ctr)
         return (start_pos[0], new_height)
     elif time_to_ctr <= t < time_to_ctr + pause_dur:
@@ -30,43 +52,41 @@ def move_image(t, start_pos, center_pos, time_to_ctr, pause_dur, w, h):
     else:
         return (w, h)
 
-def image_transition(image_path, total_duration, clips, new_start_time, pause_duration, w, h, speed): 
+def image_transition(i, image_path, total_duration, clips, new_start_time, pause_duration, w, h, speed): 
     print("enter image transition")
     image = Image.open(image_path)
-    image_width, image_height = image.size
+    image_width, image_height = image.size  
     if abs(image_width - image_height) > 100:
         if image_height > image_width:
-            process_image_height(image_path, "temp/final_output.png", target_height=550)
-            image_clip = ImageClip("temp/final_output.png")
+            process_image_height(image_path, "temp/final_output.png", target_height=800)
+            image_clip = ImageClip("temp/final_output.png").with_fps(30).with_duration(pause_duration)
             start_position = ("center", (h /2)-300)
             center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
         else:
-            process_image_width(image_path, "temp/final_output.png", target_width=900)
-            image_clip = ImageClip("temp/final_output.png")
+            process_image_width(image_path, "temp/final_output.png", target_width=1000)
+            image_clip = ImageClip("temp/final_output.png").with_fps(30).with_duration(pause_duration)
             start_position = ("center", (h /2)-100)
             center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
     else:
-        process_image_width(image_path, "temp/final_output.png", target_width=600)
-        image_clip = ImageClip("temp/final_output.png")
+        process_image_width(image_path, "temp/final_output.png", target_width=800)
+        image_clip = ImageClip("temp/final_output.png").with_fps(30).with_duration(pause_duration)
         start_position = ("center", (h /2)-100)
         center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
+    mask_clip = ImageClip("temp/extracted_mask.png", is_mask=True).with_fps(30).with_duration(pause_duration)
     print("finishing processing image")
     distance_to_center = start_position[1] - center_position[1]
     time_to_center = distance_to_center / speed
-    
+    animated_image = Zoom(image_clip, mode='in', position='center', speed=1)
+    animated_mask = Zoom(mask_clip, mode='in', position='center', speed=1)
+    animated_image.write_videofile(f"temp/sample{i}.mov", codec="prores_ks", preset="4444", fps=30)
+    animated_mask.write_videofile(f"temp/mask{i}.mov", codec="prores_ks", preset="4444", fps=30)
     # Bind the current iteration's variables
-    animated_image = (
-        image_clip
-        .with_position(lambda t, sp=start_position, cp=center_position,
+    new = VideoFileClip(f"temp/sample{i}.mov", has_mask=True).with_mask(animated_mask)
+    new = new.with_effects([vfx.CrossFadeIn(0.2)]).with_position(lambda t, sp=start_position, cp=center_position,
                        time_to_ctr=time_to_center, pause_dur=pause_duration
                          : move_image(t, sp, cp, time_to_ctr, pause_dur, w, h))
-        .with_start(new_start_time)
-        .with_duration(pause_duration)
-        .resized(lambda t : scaling_image(t,time_to_center))
-    )
-    animated_image = animated_image.with_effects([vfx.CrossFadeIn(0.2)])
-    clips.append(animated_image)
-    total_duration += animated_image.duration
+    clips.append(new)
+    total_duration += new.duration
     return total_duration, clips
 
 def video_transition(i, video_path, total_duration, clips, new_start_time, audio, audio_clips, w, h, speed):

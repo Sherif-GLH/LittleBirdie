@@ -1,5 +1,30 @@
 from PIL import Image, ImageFilter, ImageOps
 import numpy as np
+
+def add_transparent_layer(image_path, output_path, canvas_width=1920, canvas_height=1080):
+    # Open the original image
+    image = Image.open(image_path).convert("RGBA")
+    # Create a transparent canvas with the desired size
+    canvas = Image.new("RGBA", (canvas_width, canvas_height), (0, 0, 0, 0))
+
+    # Calculate the position to center the image on the canvas
+    x_offset = (canvas_width - image.width) // 2
+    y_offset = (canvas_height - image.height) // 2
+
+    # Paste the original image onto the transparent canvas
+    canvas.paste(image, (x_offset, y_offset), image)
+    # Extract the alpha channel (mask) from the canvas
+    mask = canvas.split()[-1]  # The last channel in RGBA is the alpha channel
+
+    mask = mask.convert("RGBA")  
+
+    # Save the mask as a separate grayscale image
+    mask.save("temp/extracted_mask.png", format="PNG")
+    canvas_without_alpha = canvas.convert("RGB")
+
+    # Save the result
+    canvas_without_alpha.save(output_path, format="PNG")
+
 def add_borders_and_resize_width(image, target_width=1080):
     # Resize the image to the target width, keeping the aspect ratio
     original_width, original_height = image.size
@@ -109,6 +134,7 @@ def process_image_width(image_path, output_path, target_width=1080):
     
     # Step 4: Save the result
     final_image.save(output_path)
+    add_transparent_layer(output_path, "temp/final_output.png")
     return bordered_image.height
 
 # Combined function
@@ -124,4 +150,5 @@ def process_image_height(image_path, output_path, target_height=1080):
     
     # Step 4: Save the result
     final_image.save(output_path)
+    add_transparent_layer(output_path, "temp/final_output.png")
     return final_image
