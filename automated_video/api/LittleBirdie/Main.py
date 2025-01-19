@@ -6,6 +6,20 @@ from .Transcript import adding_transcripts_audio
 from .RepeatedAudio import adding_background_audio
 from .ImageTransition import image_transition, video_transition
 
+def remove_temp():
+    try:
+        directory = "temp"
+        exception_file = "final_output.png"
+        for filename in os.listdir(directory):
+            file_path = os.path.join(directory, filename)
+            # Check if the file is not the exception and is a file (not a directory)
+            if filename != exception_file and os.path.isfile(file_path):
+                os.remove(file_path)  # Remove the file
+                print(f"Removed: {file_path}")
+        print("All files except final_output.png have been removed.")
+    except Exception as e:
+        print(f"Error removing {file_path} from instance : {str(e)}")
+
 def create_video(intro, transcript_audio, content, video_name):
     background_video = VideoFileClip('downloads/BG Template.mp4')
     background_audio = AudioFileClip('downloads/music.mp3')
@@ -42,7 +56,10 @@ def create_video(intro, transcript_audio, content, video_name):
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
     print("writing intro.....")
-    video.write_videofile(f"downloads/{video1_name}.mp4", fps=120)
+    video.write_videofile(f"downloads/{video1_name}.mp4", fps=30)
+    
+    ## removing data from intro video ##
+    remove_temp()
 
     clips = []
     total_duration = 0
@@ -68,7 +85,10 @@ def create_video(intro, transcript_audio, content, video_name):
     clips.append(logo_image)
     video = CompositeVideoClip([background_video_repeated] + clips)
     print("writing content......")
-    video.write_videofile(f"downloads/{video2_name}.mp4", fps=60)
+    video.write_videofile(f"downloads/{video2_name}.mp4", fps=30)
+
+    ## removing data from intro video ##
+    remove_temp()
 
     video1 = VideoFileClip(f"downloads/{video1_name}.mp4")
     video2 = VideoFileClip(f"downloads/{video2_name}.mp4")
@@ -86,6 +106,7 @@ def create_video(intro, transcript_audio, content, video_name):
     path = upload_to_s3(f"downloads/{name}.mp4", f"LittleBirdie/{video_name}.mp4", video1_name, video2_name)
     return path
 
+
 def upload_to_s3(file_path, s3_path, video1_name, video2_name):
     s3 = boto3.client('s3')
     try:
@@ -95,15 +116,7 @@ def upload_to_s3(file_path, s3_path, video1_name, video2_name):
         remove_local_file(file_path)
         remove_local_file(f"downloads/{video1_name}.mp4")
         remove_local_file(f"downloads/{video2_name}.mp4")
-        directory = "temp"
-        exception_file = "final_output.png"
-        for filename in os.listdir(directory):
-            file_path = os.path.join(directory, filename)
-            # Check if the file is not the exception and is a file (not a directory)
-            if filename != exception_file and os.path.isfile(file_path):
-                os.remove(file_path)  # Remove the file
-                print(f"Removed: {file_path}")
-        print("All files except final_output.png have been removed.")
+        remove_temp()
         return s3_path
     except Exception as e:
         print(f"Error uploading {file_path} to S3: {str(e)}")

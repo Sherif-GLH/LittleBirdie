@@ -84,7 +84,7 @@ def image_transition(i, image_path, total_duration, clips, new_start_time, pause
     new = VideoFileClip(f"temp/sample{i}.mov", has_mask=True).with_mask(animated_mask)
     new = new.with_effects([vfx.CrossFadeIn(0.2)]).with_position(lambda t, sp=start_position, cp=center_position,
                        time_to_ctr=time_to_center, pause_dur=pause_duration
-                         : move_image(t, sp, cp, time_to_ctr, pause_dur, w, h))
+                         : move_image(t, sp, cp, time_to_ctr, pause_dur, w, h)).with_start(new_start_time)
     clips.append(new)
     total_duration += new.duration
     return total_duration, clips
