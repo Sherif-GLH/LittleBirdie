@@ -29,7 +29,7 @@ def create_video(intro, transcript_audio, content, video_name):
             pause_duration = item["pause_duration"]
             response = requests.get(media_path)
             image_data = BytesIO(response.content)
-            total_duration, clips = image_transition(image_data, total_duration, clips, new_start_time, pause_duration, w, h, speed)
+            total_duration, clips = image_transition(i,image_data, total_duration, clips, new_start_time, pause_duration, w, h, speed)
         elif file_extension in ['.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv']:
             audio = item["with_audio"]
             total_duration, clips, audio_clips1 = video_transition(i, media_path, total_duration, clips, new_start_time, audio, audio_clips, w, h, speed)
