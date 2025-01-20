@@ -1,15 +1,15 @@
 from PIL import Image, ImageFilter, ImageOps
 import numpy as np
 
-def add_transparent_layer(image_path, output_path, canvas_width=1920, canvas_height=1080):
+def add_transparent_layer(image_path, output_path, bordered_image, canvas_width=1920, canvas_height=1080):
     # Open the original image
     image = Image.open(image_path).convert("RGBA")
     # Create a transparent canvas with the desired size
     canvas = Image.new("RGBA", (canvas_width, canvas_height), (0, 0, 0, 0))
 
     # Calculate the position to center the image on the canvas
-    x_offset = (canvas_width - image.width) // 2
-    y_offset = (canvas_height - image.height) // 2
+    x_offset = (canvas_width - bordered_image.width) // 2
+    y_offset = (canvas_height - bordered_image.height) // 2
 
     # Paste the original image onto the transparent canvas
     canvas.paste(image, (x_offset, y_offset), image)
@@ -134,7 +134,7 @@ def process_image_width(image_path, output_path, target_width=1080):
     
     # Step 4: Save the result
     final_image.save(output_path)
-    add_transparent_layer(output_path, "temp/final_output.png")
+    add_transparent_layer(output_path, "temp/final_output.png", bordered_image)
     return bordered_image.height
 
 # Combined function
@@ -150,5 +150,5 @@ def process_image_height(image_path, output_path, target_height=1080):
     
     # Step 4: Save the result
     final_image.save(output_path)
-    add_transparent_layer(output_path, "temp/final_output.png")
+    add_transparent_layer(output_path, "temp/final_output.png", bordered_image)
     return final_image
