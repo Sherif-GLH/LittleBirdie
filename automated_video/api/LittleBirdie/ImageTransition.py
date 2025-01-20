@@ -30,17 +30,6 @@ def Zoom(clip,mode='in',position='center',speed=1):
         return frame
     return clip.transform(main)
 
-def move_video(t, start_pos, center_pos, time_to_ctr, pause_dur, w, h):
-    if t <= 0:
-        return start_pos
-    elif 0 < t <= time_to_ctr:  
-        new_height = start_pos[1] - (t * (start_pos[1] - center_pos[1]) / time_to_ctr)
-        return (start_pos[0], new_height)
-    elif time_to_ctr <= t < time_to_ctr + pause_dur:
-        return center_pos
-    else:
-        return (w, h)
-    
 def move_image(t, start_pos, center_pos, time_to_ctr, pause_dur, w, h):
     if t <= 0:
         return start_pos
@@ -48,7 +37,7 @@ def move_image(t, start_pos, center_pos, time_to_ctr, pause_dur, w, h):
         new_height = start_pos[1] - (t * (start_pos[1] - center_pos[1]) / time_to_ctr)
         return (start_pos[0], new_height)
     elif time_to_ctr <= t < time_to_ctr + pause_dur:
-        return ("center", "center")
+        return center_pos
     else:
         return (w, h)
 
@@ -68,7 +57,10 @@ def image_transition(i, image_path, total_duration, clips, new_start_time, pause
             start_position = ("center", (h /2)-100)
             center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
     else:
-        process_image_width(image_path, "temp/final_output.png", target_width=800)
+        if image_height > image_width:
+            process_image_height(image_path, "temp/final_output.png", target_height=800)
+        else:
+            process_image_width(image_path, "temp/final_output.png", target_width=800)
         image_clip = ImageClip("temp/final_output.png").with_fps(30).with_duration(pause_duration)
         start_position = ("center", (h /2)-100)
         center_position = ("center", abs((h / 2) - (image_clip.h / 2)))
@@ -114,11 +106,11 @@ def video_transition(i, video_path, total_duration, clips, new_start_time, audio
         video_clip = video_clip.resized(height=850)
         frame_width, frame_height = video_clip.w, video_clip.h
         frame_image = Image.new("RGBA", (frame_width, frame_height), (0, 0, 0, 0))
-        frame_image.save("temp/final_output.png")
-        frame_image = "temp/final_output.png"
+        frame_image.save("temp/frame.png")
+        frame_image = "temp/frame.png"
         
-        process_image_height(frame_image, "temp/final_output.png", target_height=850)
-        frame_image = ImageClip("temp/final_output.png")
+        process_image_height(frame_image, "temp/frame.png", target_height=850)
+        frame_image = ImageClip("temp/frame.png")
         start_position = (721, (h /2)-300)
         shadow_position = (721-21, start_position[1]-12)
         shadow_center = (721-21, abs((h / 2) - (frame_image.h / 2))-13)
@@ -127,10 +119,10 @@ def video_transition(i, video_path, total_duration, clips, new_start_time, audio
         video_clip = video_clip.resized(width=1080)
         frame_width, frame_height = video_clip.w, video_clip.h
         frame_image = Image.new("RGBA", (frame_width, frame_height), (0, 0, 0, 0))
-        frame_image.save("temp/final_output.png")
-        frame_image = "temp/final_output.png"
-        process_image_width(frame_image, "temp/final_output.png", target_width=1080)
-        frame_image = ImageClip("temp/final_output.png")
+        frame_image.save("temp/frame.png")
+        frame_image = "temp/frame.png"
+        process_image_width(frame_image, "temp/frame.png", target_width=1080)
+        frame_image = ImageClip("temp/frame.png")
         start_position = ("center", (h /2)-100)
         shadow_position = (420-21, start_position[1]-12)
         shadow_center = (420 -21, abs((h / 2) - (frame_image.h / 2))-13)
@@ -140,14 +132,14 @@ def video_transition(i, video_path, total_duration, clips, new_start_time, audio
     print("animating the video")
 
     # animating shadow
-    shadow = ImageClip("temp/final_output.png")
+    shadow = ImageClip("temp/frame.png")
     animated_shadow = (
     shadow 
     .with_start(new_start_time)
     .with_duration(pause_duration)
     .with_position(lambda t, sp=shadow_position, cp=shadow_center,
                    time_to_ctr=time_to_center, pause_dur=pause_duration:
-                   move_video(t, sp, cp, time_to_ctr, pause_dur, w, h))
+                   move_image(t, sp, cp, time_to_ctr, pause_dur, w, h))
     )
     animated_shadow = animated_shadow.with_effects([vfx.CrossFadeIn(0.2)])
     animated_video = (
@@ -156,7 +148,8 @@ def video_transition(i, video_path, total_duration, clips, new_start_time, audio
     .with_duration(pause_duration)
     .with_position(lambda t, sp=start_position, cp=center_position,
                    time_to_ctr=time_to_center, pause_dur=pause_duration:
-                   move_video(t, sp, cp, time_to_ctr, pause_dur, w, h))
+                   move_image(t, sp, cp, time_to_ctr, pause_dur, w, h))
+
     )
     animated_video = animated_video.with_effects([vfx.CrossFadeIn(0.2)])
     clips.append(animated_shadow)
