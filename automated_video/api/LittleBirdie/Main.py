@@ -1,4 +1,4 @@
-import os, requests, boto3, random
+import os, requests, boto3, random, gc
 from moviepy import *
 from io import BytesIO
 from .RepeatedVideo import repeat_video
@@ -58,6 +58,11 @@ def create_video(intro, transcript_audio, content, video_name):
     print("writing intro.....")
     video.write_videofile(f"downloads/{video1_name}.mp4", fps=30)
     
+    clips.clear()
+    audio_clips.clear()
+    del intro, audio_clips, clips
+    gc.collect()
+    
     ## removing data from intro video ##
     remove_temp()
 
@@ -86,9 +91,12 @@ def create_video(intro, transcript_audio, content, video_name):
     video = CompositeVideoClip([background_video_repeated] + clips)
     print("writing content......")
     video.write_videofile(f"downloads/{video2_name}.mp4", fps=30)
-
     ## removing data from intro video ##
     remove_temp()
+    clips.clear()
+    audio_clips.clear()
+    del content, audio_clips, clips
+    gc.collect()
 
     video1 = VideoFileClip(f"downloads/{video1_name}.mp4")
     video2 = VideoFileClip(f"downloads/{video2_name}.mp4")

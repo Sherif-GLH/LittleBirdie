@@ -54,3 +54,21 @@ jobs:
           docker-compose build --no-cache
           docker stack deploy -c docker-compose.prod.yaml little
         EOF
+        
+    # Step 5: Stop EC2 instance after deployment
+    - name: Stop EC2 instance
+      run: |
+        INSTANCE_ID=${{ secrets.EC2_INSTANCE_ID }}
+        INSTANCE_STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].State.Name' --output text)
+        
+        if [ "$INSTANCE_STATE" == "running" ]; then
+          echo "Stopping EC2 instance..."
+          aws ec2 stop-instances --instance-ids $INSTANCE_ID
+          
+          echo "Waiting for instance to enter 'stopped' state..."
+          aws ec2 wait instance-stopped --instance-ids $INSTANCE_ID
+          
+          echo "EC2 instance has been stopped."
+        else
+          echo "EC2 instance is not running, no need to stop it."
+        fi
