@@ -39,7 +39,7 @@ def create_video(intro, transcript_audio, content, video_name):
     for item in intro: 
         media_path = item["url"]
         file_extension = os.path.splitext(media_path)[1].lower()
-        if file_extension in ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff', 'webp']:
+        if file_extension in ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.webp','.tif']:
             pause_duration = item["pause_duration"]
             response = requests.get(media_path)
             image_data = BytesIO(response.content)
@@ -74,7 +74,7 @@ def create_video(intro, transcript_audio, content, video_name):
     for item in content:
         media_path = item["url"]
         file_extension = os.path.splitext(media_path)[1].lower()
-        if file_extension in ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff']:
+        if file_extension in ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.webp','.tif']:
             pause_duration = item["pause_duration"]
             response = requests.get(media_path)
             image_data = BytesIO(response.content)
